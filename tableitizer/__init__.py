@@ -23,9 +23,10 @@ def set_py_env_folder():
   try:
     import pip
   except:
-    import ensurepip
-    ensurepip.main([
-      '--root', os.environ['TABLEITIZER_PY_ENV']
+    import subprocess
+    subprocess.run([
+      sys.executable, '-m', 'ensurepip',
+        '--user' #'--root', os.environ['TABLEITIZER_PY_ENV']
     ])
     import pip
 
