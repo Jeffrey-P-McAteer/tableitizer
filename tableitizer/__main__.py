@@ -1,0 +1,2 @@
+import tableitizer
+tableitizer.main()

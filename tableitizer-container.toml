@@ -1,0 +1,89 @@
+
+[container]
+name = "tableitizer-container"
+
+welcome_msg = '''
+Run
+  > TODO
+'''
+
+runtime_hint = "nspawn"
+
+# Internal sd disk
+# disk_partuuid = "8f3ca68c-d031-2d41-849c-be5d9602e920"
+# external scratch disk
+disk_partuuid = "e08214f5-cfc5-4252-afee-505dfcd23808"
+
+# The tool looks up the mount point for disk_partuuid and adds this to the mount location.
+# Disks must be mounted separately from azure-contain.
+part_subfolder = "containers/tableitizer-container"
+
+# If root FS is empty or install flag missing, all of these are run as root.
+install_setup_cmds = [
+  # By default the tarball has a root.x86_64/ folder which we want the contents of placed at {container_root_dir}
+  "wget -qO- 'http://mirror.adectra.com/archlinux/iso/2023.09.01/archlinux-bootstrap-x86_64.tar.gz' | tar xvz -C '{container_root_dir}' --strip-components=1",
+  
+  # Arch will need a good mirror list to install packages with
+  "cp /etc/pacman.d/mirrorlist '{container_root_dir}'/etc/pacman.d/mirrorlist",
+
+  # Enable multilib!
+  "SH_IN_CONTAINER: echo '[multilib]' >> /etc/pacman.conf",
+  "SH_IN_CONTAINER: echo 'Include = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf",
+  # Turn off signature checks
+  "SH_IN_CONTAINER: sed -i \"s/SigLevel.*=.*/SigLevel = Never/g\" /etc/pacman.conf",
+  # Turn off space check
+  "SH_IN_CONTAINER: sed -i \"s/^CheckSpace.*/#CheckSpace/g\" /etc/pacman.conf",
+
+  # Use utf-8 locale
+  "SH_IN_CONTAINER: echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen",
+  "SH_IN_CONTAINER: locale-gen",
+  "SH_IN_CONTAINER: echo 'LANG=\"en_US.UTF-8\"' > /etc/locale.conf",
+
+  "SH_IN_CONTAINER: pacman-key --init",
+  "SH_IN_CONTAINER: pacman -S archlinux-keyring",
+  "SH_IN_CONTAINER: pacman -Syu --noconfirm",
+  
+  # Now install packages!
+  "SH_IN_CONTAINER: pacman -Sy --noconfirm mesa-utils xterm sudo vim ttf-liberation base-devel",
+  
+  # Setup user 'user'
+  "SH_IN_CONTAINER: useradd -m -G render,input,video,users,dbus,wheel user",
+  "SH_IN_CONTAINER: echo \"%wheel ALL=(ALL) NOPASSWD: ALL\" > /etc/sudoers.d/enablewheel",
+
+  # use user account to install yay
+  "SH_IN_CONTAINER: mkdir /opt/yay ; chown user:user /opt/yay",
+  "SH_IN_CONTAINER: su user -c 'git clone https://aur.archlinux.org/yay.git /opt/yay ; cd /opt/yay ; makepkg -si '",
+
+  # Addtl stuff for input adjustments
+  "SH_IN_CONTAINER: pacman -S --noconfirm xorg-server xorg-xinit xorg-server-utils mesa nvidia-utils nvidia xf86-video-intel xf86-video-amdgpu",
+  "SH_IN_CONTAINER: echo \"allowed_users = anybody\" >> /etc/X11/Xwrapper.config",  
+
+  # Anything done via yay needs non-root
+  "SH_IN_CONTAINER: su user -c 'yay -Sy --noconfirm python310'",
+
+
+]
+
+# Used for permissions + folder bind mounts, added after "systemd-nspawn -D /path/to/root"
+nspawn_addtl_args = [
+  "--capability=all",
+  # "--capability=CAP_SYS_ADMIN",
+  "--bind=/run/user/1000:/run/user/1000",
+  "--bind=/var/lib/dbus",
+  "--bind=/dev/dri",
+  "--bind=/dev/snd",
+  "--bind=/tmp",
+  "--bind=/dev/nvidia0",
+  "--bind=/dev/nvidia1",
+  "--bind=/dev/tty2", # used when running from framebuffer to allocate xorg stuffs
+  "--bind=/j/proj/tableitizer", # Share this project directory into the container
+  "--chdir=/j/proj/tableitizer", # And move into it on boot
+  "--user=user", # exec as user user we setup before, we expect it's ID to match our GUI user's ID (1000)
+  "--"
+]
+
+fwd_env_vars = [
+  "WAYLAND_DISPLAY", "DISPLAY", "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS", "XDG_VTNR", "XDG_SESSION_ID"
+]
+
+
