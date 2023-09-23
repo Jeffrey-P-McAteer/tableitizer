@@ -76,9 +76,13 @@ nspawn_addtl_args = [
   "--bind=/dev/nvidia0",
   "--bind=/dev/nvidia1",
   "--bind=/dev/tty2", # used when running from framebuffer to allocate xorg stuffs
+
+  "", 
+
   "--bind=/j/proj/tableitizer", # Share this project directory into the container
   "--chdir=/j/proj/tableitizer", # And move into it on boot
   "--user=user", # exec as user user we setup before, we expect it's ID to match our GUI user's ID (1000)
+  
   "--"
 ]
 
