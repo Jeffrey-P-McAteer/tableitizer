@@ -4,7 +4,7 @@ name = "tableitizer-container"
 
 welcome_msg = '''
 Run
-  > TODO
+  > python3.10 -m tableitizer
 '''
 
 runtime_hint = "nspawn"

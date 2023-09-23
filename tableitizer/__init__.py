@@ -32,9 +32,10 @@ def set_py_env_folder():
 
 def main(args=sys.argv):
   parser = argparse.ArgumentParser(description='Tableitizer: Turn unstructured data into structured data through automated prompting of AI agents')
-
-
-  args = parser.parse_args(args[1:])
+  # Pop off args[0] if it's a python file
+  if len(args) > 0 and args[0].lower().endswith('.py') and os.path.exists(args[0]):
+    args = args[1:]
+  args = parser.parse_args(args)
 
   set_py_env_folder()
   print(f'Using TABLEITIZER_PY_ENV = {os.environ.get("TABLEITIZER_PY_ENV", None)}')
