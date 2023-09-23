@@ -32,10 +32,13 @@ def set_py_env_folder():
 
 
 def main(args=sys.argv):
-  parser = argparse.ArgumentParser(description='Tableitizer: Turn unstructured data into structured data through automated prompting of AI agents')
   # Pop off args[0] if it's a python file
   if len(args) > 0 and args[0].lower().endswith('.py') and os.path.exists(args[0]):
     args = args[1:]
+  
+  parser = argparse.ArgumentParser(description='Tableitizer: Turn unstructured data into structured data through automated prompting of AI agents')
+  parser.add_argument('command', nargs='?', default='langchain')
+
   args = parser.parse_args(args)
 
   set_py_env_folder()
@@ -46,7 +49,10 @@ def main(args=sys.argv):
   
   print(f'args={args}')
 
-  tableitizer.experiments.simple_model_poc()
+  if 'langchain' in args.command:
+    tableitizer.experiments.langchain_poc()
+  else:
+    tableitizer.experiments.simple_model_poc()
 
 
 
