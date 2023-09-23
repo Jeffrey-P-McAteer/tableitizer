@@ -44,7 +44,7 @@ install_setup_cmds = [
   "SH_IN_CONTAINER: pacman -Syu --noconfirm",
   
   # Now install packages!
-  "SH_IN_CONTAINER: pacman -Sy --noconfirm mesa-utils xterm sudo vim ttf-liberation base-devel",
+  "SH_IN_CONTAINER: pacman -Sy --noconfirm mesa-utils xterm sudo vim ttf-liberation base-devel git",
   
   # Setup user 'user'
   "SH_IN_CONTAINER: useradd -m -G render,input,video,users,dbus,wheel user",
