@@ -51,6 +51,8 @@ def main(args=sys.argv):
 
   if 'langchain' in args.command:
     tableitizer.experiments.langchain_poc()
+  elif 'falcon' in args.command:
+    tableitizer.experiments.simple_falcon_responses()
   else:
     tableitizer.experiments.simple_model_poc()
 
