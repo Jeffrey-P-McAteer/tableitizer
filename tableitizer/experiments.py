@@ -2,6 +2,7 @@ import os
 import sys
 
 def simple_falcon_responses():
+  import re
   try:
     from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
     import transformers
@@ -50,14 +51,14 @@ The fifth car is colored green.
 The sixth car on the road is white and smells of oil.
 
 '''.strip() +'\n\n'+ '''
-How many cars are on the road?
+There are currently this many cars on the road: 
 '''.strip()
 
   sequences = pipeline(
       initial_docs_and_prompt,
-      max_length=850,
+      max_length=250,
       do_sample=True,
-      top_k=10,
+      #top_k=10,
       num_return_sequences=1,
       eos_token_id=tokenizer.eos_token_id,
   )
@@ -66,11 +67,25 @@ How many cars are on the road?
   print(initial_docs_and_prompt);
   print('=' * 8, '======', '=' * 8)
   
-
+  # Correct answer is 5, but this is kind of a tricky Q for a low-level model.
+  nums = dict()
   for seq in sequences:
       print(f"Result: {seq['generated_text']}")
+      try:
+        for possible_num_txt in re.findall(r'\d+', seq['generated_text']):
+          possible_num = int(possible_num_txt)
+          if not possible_num in nums:
+            nums[possible_num] = 0
+          if 'cars' in possible_num_txt:
+            nums[possible_num] += 10
+          else:
+            nums[possible_num] += 1
+      except:
+        pass
+
 
   print(f'pipeline = {pipeline}')
+  print(f'nums = {nums} (we want to see 5 in here!)')
 
   # TODO
   import code
