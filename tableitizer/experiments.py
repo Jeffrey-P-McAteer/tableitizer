@@ -1,6 +1,60 @@
 import os
 import sys
 
+def flan_experiment():
+  model_to_use = 'google/flan-t5-xl' # 3b parameter model, uses maybe 12gb ram.
+  model_source = 'huggingface'
+
+  # See https://github.com/Pan-ML/panml
+  try:
+      import panml
+  except:
+      import pip
+      pip.main([
+        'install', f'--target={os.environ.get("TABLEITIZER_PY_ENV", None)}',
+          'git+https://github.com/Pan-ML/panml.git'
+      ])
+      import panml
+
+  from panml.models import ModelPack
+
+  lm = ModelPack(model=model_to_use, source=model_source, model_args={'gpu': True})
+
+  def lm_answer(context_text, question_text):
+    lm_output = lm.predict(f'''
+Given the following document:
+===
+{context_text}
+===
+Answer this question correctly: "{question_text}"
+'''.strip(), max_length=2048)
+    return lm_output['text']
+
+
+  context_text = '''
+There are four cars on the road.
+The first car is colored rec and has a sunroof.
+The second car is colored blue.
+The third car is colored yellow.
+The fifth car is colored green.
+The sixth car on the road is white and smells of oil.
+  '''.strip()
+
+  question_text = '''
+How many cars are visible on the road?
+  '''.strip()
+
+  print(f'lm = {lm}')
+  print(f'lm_answer(context_text, question_text)')
+  print(f'lm_answer("words words words", "How many words were spoken?")')
+
+
+  import code
+  v = globals()
+  v.update(locals())
+  code.interact(local=v)
+
+
 def simple_falcon_responses():
   import re
   try:
@@ -27,6 +81,7 @@ def simple_falcon_responses():
     import torch
     import safetensors
 
+  #model = 'tiiuae/falcon-rw-1b'
   model = 'tiiuae/falcon-rw-1b'
 
   tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True, use_fast=True)
