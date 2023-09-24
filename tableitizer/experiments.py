@@ -2,7 +2,8 @@ import os
 import sys
 
 def flan_experiment():
-  model_to_use = 'google/flan-t5-xl' # 3b parameter model, uses maybe 12gb ram.
+  #model_to_use = 'google/flan-t5-base'
+  model_to_use = 'google/flan-t5-large'
   model_source = 'huggingface'
 
   # See https://github.com/Pan-ML/panml
@@ -36,7 +37,7 @@ Answer this question correctly: "{question_text}"
 
   context_text = '''
 There are four cars on the road.
-The first car is colored rec and has a sunroof.
+The first car is colored red and has a sunroof.
 The second car is colored blue.
 The third car is colored yellow.
 The fifth car is colored green.
