@@ -18,7 +18,10 @@ def flan_experiment():
 
   from panml.models import ModelPack
 
-  lm = ModelPack(model=model_to_use, source=model_source, model_args={'gpu': True})
+  lm = ModelPack(model=model_to_use, source=model_source, model_args={
+    'gpu': True,
+    'do_sample': True,
+  })
 
   def lm_answer(context_text, question_text):
     lm_output = lm.predict(f'''

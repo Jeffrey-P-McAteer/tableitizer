@@ -77,7 +77,9 @@ nspawn_addtl_args = [
   "--bind=/dev/nvidia1",
   "--bind=/dev/tty2", # used when running from framebuffer to allocate xorg stuffs
 
-  # "", 
+  # Do not allocate >9gb of real ram, quickly spill into swap
+  "--property=MemoryHigh=9G", 
+  "--property=MemorySwapMax=999G", 
 
   "--bind=/j/proj/tableitizer", # Share this project directory into the container
   "--chdir=/j/proj/tableitizer", # And move into it on boot
