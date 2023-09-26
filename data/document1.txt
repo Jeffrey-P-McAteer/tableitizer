@@ -1,0 +1,9 @@
+
+There are five cars in the parking lot.
+The first car is in position 12C and is colored Red. It faces 312 degrees and has windows down.
+The second car is at position 9X. It is yellow in color, and is rotated to face 123 degrees.
+The third car is a blue truck at 5D, pointed at 12.5 degrees.
+The fourth car is a gold sedan with glitter all over it in position 19A. The gold sedan faces 45.2 degrees.
+The last car is a black Jeep with no doors at 3B. The Jeep is facing the same direction as the second car.
+
+

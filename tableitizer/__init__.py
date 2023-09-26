@@ -2,6 +2,7 @@
 import os
 import sys
 import argparse
+import json
 
 # Our Code
 import tableitizer.experiments
@@ -30,6 +31,12 @@ def set_py_env_folder():
     ])
     import pip
 
+def is_a_file(string):
+  if not os.path.exists(string):
+    raise Exception(f'The file {string} must exist!')
+  if os.path.isdir(string):
+    raise Exception(f'{string} must be a text file!')
+  return string
 
 def main(args=sys.argv):
   # Pop off args[0] if it's a python file
@@ -37,8 +44,10 @@ def main(args=sys.argv):
     args = args[1:]
   
   parser = argparse.ArgumentParser(description='Tableitizer: Turn unstructured data into structured data through automated prompting of AI agents')
-  parser.add_argument('command', nargs='?', default='langchain')
-
+  parser.add_argument('doc', type=is_a_file)
+  parser.add_argument('schema', type=is_a_file)
+  parser.add_argument('csv_out', nargs='?', default='')
+  
   args = parser.parse_args(args)
 
   set_py_env_folder()
@@ -47,16 +56,21 @@ def main(args=sys.argv):
   set_transformers_model_folder()
   print(f'Using TRANSFORMERS_CACHE = {os.environ.get("TRANSFORMERS_CACHE", None)}')
   
-  print(f'args={args}')
+  doc_context = ''
+  with open(args.doc, 'r') as fd:
+    doc_context = fd.read()
+    if not isinstance(doc_context, str):
+      doc_context = doc_context.decode('utf-8')
 
-  if 'langchain' in args.command:
-    tableitizer.experiments.langchain_poc()
-  elif 'falcon' in args.command:
-    tableitizer.experiments.simple_falcon_responses()
-  elif 'flan' in args.command:
-    tableitizer.experiments.flan_experiment()
-  else:
-    tableitizer.experiments.simple_model_poc()
+  schema = {}
+  with open(args.schema, 'r') as fd:
+    schema = json.load(fd)
+
+  print('todo')
+  
+
+
+
 
 
 
