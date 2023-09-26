@@ -5,6 +5,9 @@ models/
 model-weights/
 .tableitizer-model-weights/
 .tableitizer-py-env/
+.model-weights
+.py-env
+
 
 
 

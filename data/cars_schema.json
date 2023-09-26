@@ -1,8 +1,9 @@
 {
-  "": "",
-  "cars": [
+  "cars:How many cars are there?": [
     {
-      "": ""
+      "color": "What color is car {}?",
+      "position": "What position is cat {} in?",
+      
     }
   ]
 }

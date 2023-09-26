@@ -6,6 +6,9 @@ import json
 
 # Our Code
 import tableitizer.experiments
+import tableitizer.packages
+
+json5 = tableitizer.packages.p_import('json5')
 
 def set_transformers_model_folder():
   if not 'TRANSFORMERS_CACHE' in os.environ:
@@ -64,10 +67,10 @@ def main(args=sys.argv):
 
   schema = {}
   with open(args.schema, 'r') as fd:
-    schema = json.load(fd)
+    schema = json5.load(fd)
 
-  print('todo')
-  
+  print(f'schema = {schema}')
+
 
 
 
