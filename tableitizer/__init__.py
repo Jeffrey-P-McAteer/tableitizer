@@ -71,7 +71,7 @@ def gen_table_reader(schema_key, schema_val):
         table_reader.row_field_parser_fn[key] = locals()[parse_fn]
         
 
-      table_reader.row_field_query_dict[k.lower().strip()] = v
+      table_reader.row_field_query_dict[key] = v
     else:
       table_reader.row_field_query_dict[k.lower().strip()] = v
 
