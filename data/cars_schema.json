@@ -1,9 +1,12 @@
 {
-  "cars:How many cars are there?": [
+  "cars:=How many cars are there?;;What is the number of cars?;;How many cars?;;How many things?;;cars?": [
     {
-      "color": "What color is car {}?",
-      "position": "What position is cat {} in?",
-      
+      "color": "What color is car {0}?",
+      "position": "What position is car {0} in?",
+      "angle:=parse_float": [
+        "Which angle is car {0} facing?",
+        "Which direction is car {0} facing?",
+      ],
     }
   ]
 }
