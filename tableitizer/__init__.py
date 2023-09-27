@@ -113,7 +113,7 @@ def parse_str(text):
     return None
   return str(text)
 
-def answer_questions(lm, doc_context, questions, parser_fn):
+def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
   if not isinstance(questions, list):
     questions = [ questions ]
 
@@ -125,7 +125,18 @@ def answer_questions(lm, doc_context, questions, parser_fn):
       f'''Article: {doc_context}\n\nNow answer this question: {question}'''.strip(),
     ]
     for prompt_template in prompt_templates:
+      
+      if verbosity > 1:
+        print()
+        llm_input = prompt_template.replace(doc_context, '{doc_context}').replace('\n\n', '\n').strip()
+        llm_input = llm_input.replace('\n', '\nLLM>>> ')
+        print(f'LLM>>> {llm_input}')
+      
       lm_output = lm.predict(prompt_template, max_length=2048)
+
+      if verbosity > 1:
+        print(f'LLM<<< {lm_output.get("text", None)}')
+
       lm_response = None
       if 'text' in lm_output:
         try:
@@ -147,6 +158,10 @@ def main(args=sys.argv):
   if len(args) > 0 and args[0].lower().endswith('.py') and os.path.exists(args[0]):
     args = args[1:]
   
+  ## 
+  ## First we read all cli args (or could be called from another module; import tableitizer, tableitizer.main(['file.txt' ... ]))
+  ##
+
   parser = argparse.ArgumentParser(description='Tableitizer: Turn unstructured data into structured data through automated prompting of AI agents')
   parser.add_argument('doc', type=is_a_file)
   parser.add_argument('schema', type=is_a_file)
@@ -161,6 +176,10 @@ files will be output. All .csv files will contain 1 row of header names.
   parser.add_argument('--model-source', nargs='?', default='huggingface')
 
   args = parser.parse_args(args)
+
+  ## 
+  ## Now read argument data from files into useful data structures
+  ##
 
   set_transformers_model_folder()
   if args.verbose > 0:
@@ -196,7 +215,10 @@ files will be output. All .csv files will contain 1 row of header names.
       print(f't.table_count_queries={t.table_count_queries}')
       print(f't.row_field_query_dict={t.row_field_query_dict}')
 
-  # Load model
+  ## 
+  ## Load the LLM
+  ##
+
   if args.verbose > 0:
     print(f'Loading model {args.model} from {args.model_source}')
   model_load_begin_s = time.perf_counter()
@@ -210,12 +232,19 @@ files will be output. All .csv files will contain 1 row of header names.
   if args.verbose > 0:
     print(f'{args.model} loaded in {model_load_end_s - model_load_begin_s:0.1f}s')
 
+  ## 
+  ## Parse all the data using the llm!
+  ##
+
   parsed_data = dict()
   for t in table_readers:
-    num_items = answer_questions(lm, doc_context, t.table_count_queries, parse_int)
+    if args.verbose > 0:
+      print('=' * 6, t.table_name, '=' * 6)
+
+    num_items = answer_questions(lm, doc_context, t.table_count_queries, parse_int, verbosity=args.verbose)
     if args.verbose > 0:
       print(f'{t.table_name} num_items = {num_items}')
-    
+      
     if num_items is None:
       continue
 
@@ -234,11 +263,17 @@ files will be output. All .csv files will contain 1 row of header names.
 
           if args.verbose > 1:
             print(f'row_vals[{field_name}] = answer_questions(lm, doc_context, {field_questions}, {t.row_field_parser_fn.get(field_name, parse_str)})')
-          row_vals[field_name] = answer_questions(lm, doc_context, field_questions, t.row_field_parser_fn.get(field_name, parse_str) )
+
+          row_vals[field_name] = answer_questions(lm, doc_context, field_questions, t.row_field_parser_fn.get(field_name, parse_str), verbosity=args.verbose )
 
         parsed_data[t.table_name].append(row_vals)
       except Exception:
         traceback.print_exc()
+
+
+  ## 
+  ## Now write results someplace useful!
+  ##
 
   if not args.out_file:
     # Args file is falsey, print everything to stdout
