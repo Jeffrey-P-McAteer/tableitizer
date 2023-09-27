@@ -5,6 +5,7 @@ import argparse
 from collections import namedtuple
 import time
 import json
+import csv
 import traceback
 import re
 
@@ -149,7 +150,11 @@ def main(args=sys.argv):
   parser = argparse.ArgumentParser(description='Tableitizer: Turn unstructured data into structured data through automated prompting of AI agents')
   parser.add_argument('doc', type=is_a_file)
   parser.add_argument('schema', type=is_a_file)
-  parser.add_argument('csv_out', nargs='?', default='')
+  parser.add_argument('out_file', nargs='?', default='', help='''
+Output data file; if name ends in .json, all tables will be placed in one file.
+If name ends in .csv AND >1 table is defined, multiple <prefix>_<table-name>.csv
+files will be output. All .csv files will contain 1 row of header names.
+'''.strip())
   parser.add_argument('-v', '--verbose', action='count', default=0)
   parser.add_argument('--model', nargs='?', default='google/flan-t5-large')
   #parser.add_argument('--model', nargs='?', default='google/flan-t5-xl')
@@ -235,9 +240,52 @@ def main(args=sys.argv):
       except:
         traceback.print_exc()
 
-    if args.verbose > 0:
-      print(f'parsed_data["{t.table_name}"] = {json.dumps(parsed_data[t.table_name], indent=3)}')
+  if not args.out_file:
+    # Args file is falsey, print everything to stdout
+    print('No out_file specified, printing all data to stdout!')
+    for table_name, table_rows in parsed_data.items():
+      print('=' * 6, table_name, '=' * 6)
+      for row in table_rows:
+        print(json.dumps(row, indent=2))
+      print()
 
+  else:
+    if len(parsed_data) < 1:
+      print(f'No tables specified, cannot write anything to {args.out_file}!')
+      return
+
+    if args.out_file.lower().endswith('.json'):
+      print(f'Writing results to {args.out_file}')
+      with open(args.out_file, 'w') as fd:
+        json.dump(parsed_data, fd, indent=2)
+
+    elif args.out_file.lower().endswith('.csv'):
+      if len(parsed_data) > 1:
+        raise Exception('TODO unimplemented!')
+
+      else:
+        table_name = list(parsed_data.keys())[0]
+        print(f'Writing table {table_name} to {args.out_file}')
+        
+        col_names = list()
+        for row_dict in parsed_data[table_name]:
+          for col_name in row_dict.keys():
+            if not col_name in col_names:
+              col_names.append(col_name)
+
+        with open(args.out_file, 'w', newline='') as csvfile:
+          csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+          csvwriter.writerow(col_names)
+          for row_dict in parsed_data[table_name]:
+            row_vals = []
+            for col_name in col_names:
+              row_vals.append(row_dict.get(col_name, '')) # Get value || empty string
+            csvwriter.writerow(row_vals)
+      
+    else:
+      print(f'Unknown extension for {args.out_file}, writing JSON-formatted data to it!')
+      with open(args.out_file, 'w') as fd:
+        json.dump(parsed_data, fd, indent=2)
 
 
 
