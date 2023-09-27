@@ -261,8 +261,28 @@ files will be output. All .csv files will contain 1 row of header names.
 
     elif args.out_file.lower().endswith('.csv'):
       if len(parsed_data) > 1:
-        raise Exception('TODO unimplemented!')
+        out_dir_name = os.path.dirname(os.path.abspath(args.out_file))
+        filename_base, extension = os.path.splitext(os.path.basename(args.out_file))
 
+        for table_name, rows in parsed_data.items():
+          out_csv_file = os.path.join(out_dir_name, f'{filename_base}_{table_name}{extension}')
+          print(f'Writing table {table_name} to {out_csv_file}')
+          
+          col_names = list()
+          for row_dict in parsed_data[table_name]:
+            for col_name in row_dict.keys():
+              if not col_name in col_names:
+                col_names.append(col_name)
+
+          with open(out_csv_file, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            csvwriter.writerow(col_names)
+            for row_dict in parsed_data[table_name]:
+              row_vals = []
+              for col_name in col_names:
+                row_vals.append(row_dict.get(col_name, '')) # Get value || empty string
+              csvwriter.writerow(row_vals)
+        
       else:
         table_name = list(parsed_data.keys())[0]
         print(f'Writing table {table_name} to {args.out_file}')

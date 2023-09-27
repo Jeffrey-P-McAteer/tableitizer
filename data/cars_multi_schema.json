@@ -1,0 +1,17 @@
+{
+  "cars:=How many cars are there?;;What is the number of cars?;;How many cars?;;cars?": [
+    {
+      "color": "What color is car {0}?",
+      "position": "What position is car {0} in?",
+      "angle:=parse_float": [
+        "Which angle is car {0} facing?",
+        "Which direction is car {0} facing?",
+      ],
+    }
+  ],
+  "trees:=How many trees are there?;;What is the number of trees?;;How many trees?;;trees?": {
+    "height:=parse_float": "How tall is tree number {0}?",
+    "leaf_type": "What type of leaf does tree {0} have?"
+  }
+}
+

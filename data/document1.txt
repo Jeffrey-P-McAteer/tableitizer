@@ -6,4 +6,7 @@ The third car is a blue truck at 5D, pointed at 12.5 degrees.
 The fourth car is a gold sedan with glitter all over it in position 19A. The gold sedan faces 45.2 degrees.
 The last car is a black Jeep with no doors at 3B. The Jeep is facing the same direction as the second car.
 
+There are two trees in the park.
+Tree number one is 15m tall and has fir leaves.
+Tree number two is 10m tall.
 
