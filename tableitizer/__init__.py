@@ -85,9 +85,9 @@ def parse_int(text):
   if text is None:
     return None
   text = text.lower().strip()
-  text = NON_INT_REGEX.sub('', text) # remove all except [decimal] chars
   try:
-    return int(text)
+    integer_text = NON_INT_REGEX.sub('', text) # remove all except [decimal] chars
+    return int(integer_text)
   except:
     return int(w2n.word_to_num(text))
 
@@ -95,9 +95,9 @@ def parse_float(text):
   if text is None:
     return None
   text = text.lower().strip()
-  text = NON_DECIMAL_REGEX.sub('', text) # remove all except [decimal + '.'] chars
   try:
-    return float(text)
+    float_text = NON_DECIMAL_REGEX.sub('', text) # remove all except [decimal + '.'] chars
+    return float(float_text)
   except:
     return float(w2n.word_to_num(text))
 
