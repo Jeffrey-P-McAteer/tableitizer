@@ -234,7 +234,9 @@ files will be output. All .csv files will contain 1 row of header names.
   lm = ModelPack(model=args.model, source=args.model_source, model_args={
     'gpu': True,
     'do_sample': True,
+    'n_positions': 2048,
   })
+  # ^^ See model_args extras passed into .from_pretrained() https://huggingface.co/transformers/v3.5.1/model_doc/auto.html#automodelforseq2seqlm
 
   model_load_end_s = time.perf_counter()
   if args.verbose > 0:
