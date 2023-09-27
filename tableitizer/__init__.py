@@ -21,7 +21,7 @@ from panml.models import ModelPack
 
 try:
   word2number = tableitizer.packages.p_import('word2number')
-except:
+except Exception:
   pass
 from word2number import w2n
 
@@ -89,10 +89,10 @@ def parse_int(text):
   try:
     integer_text = NON_INT_REGEX.sub('', text).strip() # remove all except [decimal] chars
     return int(integer_text)
-  except:
+  except Exception:
     try:
       return int(w2n.word_to_num(text))
-    except:
+    except Exception:
       return None
 
 def parse_float(text):
@@ -102,10 +102,10 @@ def parse_float(text):
   try:
     float_text = NON_DECIMAL_REGEX.sub('', text).strip() # remove all except [decimal + '.'] chars
     return float(float_text)
-  except:
+  except Exception:
     try:
       return float(w2n.word_to_num(text))
-    except:
+    except Exception:
       return None
 
 def parse_str(text):
@@ -130,7 +130,7 @@ def answer_questions(lm, doc_context, questions, parser_fn):
       if 'text' in lm_output:
         try:
           lm_response = parser_fn(lm_output['text'])
-        except:
+        except Exception:
           traceback.print_exc()
       else:
         lm_response = json.dumps(lm_output)
@@ -237,7 +237,7 @@ files will be output. All .csv files will contain 1 row of header names.
           row_vals[field_name] = answer_questions(lm, doc_context, field_questions, t.row_field_parser_fn.get(field_name, parse_str) )
 
         parsed_data[t.table_name].append(row_vals)
-      except:
+      except Exception:
         traceback.print_exc()
 
   if not args.out_file:
