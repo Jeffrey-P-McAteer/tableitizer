@@ -18,6 +18,7 @@ json5 = tableitizer.packages.p_import('json5')
 
 panml = tableitizer.packages.p_import('panml', 'git+https://github.com/Pan-ML/panml.git')
 from panml.models import ModelPack
+torch = tableitizer.packages.p_import('torch', 'torch torchvision torchaudio')
 
 try:
   word2number = tableitizer.packages.p_import('word2number')
@@ -126,15 +127,15 @@ def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
     ]
     for prompt_template in prompt_templates:
       
-      if verbosity > 1:
+      if verbosity > 2:
         print()
         llm_input = prompt_template.replace(doc_context, '{doc_context}').replace('\n\n', '\n').strip()
         llm_input = llm_input.replace('\n', '\nLLM>>> ')
         print(f'LLM>>> {llm_input}')
       
-      lm_output = lm.predict(prompt_template, max_length=2048)
+      lm_output = lm.predict(prompt_template, max_length=2048, keep_history=False)
 
-      if verbosity > 1:
+      if verbosity > 2:
         print(f'LLM<<< {lm_output.get("text", None)}')
 
       lm_response = None
@@ -180,6 +181,13 @@ files will be output. All .csv files will contain 1 row of header names.
   ## 
   ## Now read argument data from files into useful data structures
   ##
+
+  if args.verbose > 0:
+    try:
+      print(f'torch.cuda.is_available() = {torch.cuda.is_available()}')
+      print(f'torch.backends.mps.is_available() = {torch.backends.mps.is_available()}')
+    except Exception:
+      traceback.print_exc()
 
   set_transformers_model_folder()
   if args.verbose > 0:

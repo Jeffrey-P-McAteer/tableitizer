@@ -17,7 +17,7 @@ def p_import(module_name, package_name=None):
     return importlib.import_module(module_name)
   except:
     subprocess.run([
-      sys.executable, '-m', 'pip', 'install', f'--target={env_target}', package_name
+      sys.executable, '-m', 'pip', 'install', f'--target={env_target}', *(package_name.split())
     ])
 
   return importlib.import_module(module_name)
