@@ -173,7 +173,6 @@ files will be output. All .csv files will contain 1 row of header names.
 '''.strip())
   parser.add_argument('-v', '--verbose', action='count', default=0)
   parser.add_argument('--model', nargs='?', default='google/flan-t5-large')
-  #parser.add_argument('--model', nargs='?', default='google/flan-t5-xl')
   parser.add_argument('--model-source', nargs='?', default='huggingface')
 
   args = parser.parse_args(args)

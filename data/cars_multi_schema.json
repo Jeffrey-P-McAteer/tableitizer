@@ -1,5 +1,5 @@
 {
-  "cars:=How many cars are there?;;What is the number of cars?;;How many cars?;;Number of cars on the road?;;Count cars?;;cars?": [
+  "cars:=How many cars are in the parking lot?;;How many cars are there?;;What is the number of cars?;;How many cars?;;Number of cars on the road?;;Count cars?": [
     {
       "color": "What color is car {0}?",
       "position": "What position is car {0} in?",
@@ -9,7 +9,7 @@
       ],
     }
   ],
-  "trees:=How many trees are there?;;What is the number of trees?;;How many trees?;;Number of trees?;;Count trees?;;trees?": {
+  "trees:=How many trees are in the park?;;How many trees are there?;;What is the number of trees?;;How many trees?;;Number of trees?;;Count trees?": {
     "height:=parse_float": "How tall is tree number {0}?",
     "leaf_type": "What type of leaf does tree {0} have?"
   }
