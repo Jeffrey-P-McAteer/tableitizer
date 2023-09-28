@@ -247,7 +247,6 @@ files will be output. All .csv files will contain 1 row of header names.
     'n_positions': 2048,
 
     'device_map': 'auto',
-    'load_in_8bit': True, # possibly lower ram usage?
   })
   # ^^ See model_args extras passed into .from_pretrained() https://huggingface.co/transformers/v3.5.1/model_doc/auto.html#automodelforseq2seqlm
 
