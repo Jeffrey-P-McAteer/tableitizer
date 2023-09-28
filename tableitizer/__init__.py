@@ -19,6 +19,7 @@ def set_transformers_model_folder():
           os.getcwd(), '.tableitizer-model-weights'
       )
   os.makedirs(os.environ['TRANSFORMERS_CACHE'], exist_ok=True)
+  os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
 
 # MUST be done before importing libs!!
 set_transformers_model_folder()
