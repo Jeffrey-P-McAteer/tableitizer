@@ -164,7 +164,7 @@ def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
             lm_out_text = lm_out_text[lm_trim_i+1:].strip()
 
           lm_response = parser_fn(lm_out_text)
-          
+
         except Exception:
           traceback.print_exc()
       else:
@@ -272,6 +272,7 @@ from "flan-t5-base.json" if that file exists.
         continue
       model_arg_name = os.path.basename(model_arg_file).lower().replace('.json', '')
       try:
+        model_arg_file = os.path.join(model_args_dir, model_arg_file)
         with open(model_arg_file, 'r') as fd:
           known_good_model_args[model_arg_name] = json5.load(fd)
       except:
