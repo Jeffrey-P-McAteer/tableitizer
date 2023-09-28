@@ -170,6 +170,7 @@ def main(args=sys.argv):
   # Pop off args[0] if it's a python file
   if len(args) > 0 and args[0].lower().endswith('.py') and os.path.exists(args[0]):
     args = args[1:]
+  model_args_dir = os.path.join(os.path.dirname(__file__), 'model_args')
   
   ## 
   ## First we read all cli args (or could be called from another module; import tableitizer, tableitizer.main(['file.txt' ... ]))
@@ -184,8 +185,22 @@ If name ends in .csv AND >1 table is defined, multiple <prefix>_<table-name>.csv
 files will be output. All .csv files will contain 1 row of header names.
 '''.strip())
   parser.add_argument('-v', '--verbose', action='count', default=0)
-  parser.add_argument('--model', nargs='?', default='google/flan-t5-large')
+  parser.add_argument('--model', nargs='?', default='google/flan-t5-large', help='''
+Example models:
+  - bert-base-uncased    -110m parameters
+  - bert-large-uncased   -340m parameters
+  - google/flan-t5-base  -? parameters, needs 3gb ram
+  - google/flan-t5-large -? parameters, needs 4gb ram
+
+'''.strip())
   parser.add_argument('--model-source', nargs='?', default='huggingface')
+  parser.add_argument('--model-args-dir', nargs='?', default=model_args_dir, help='''
+Location of model-specific arguments used during loading. File names must be the
+last token of the model name; for example the model "bert-base-uncased" would have
+configuration loaded from "bert-base-uncased.json" if that file exists,
+and the model "google/flan-t5-base" would have configuration loaded
+from "flan-t5-base.json" if that file exists.
+'''.strip())
 
   args = parser.parse_args(args)
 
@@ -238,18 +253,31 @@ files will be output. All .csv files will contain 1 row of header names.
   ## Load the LLM
   ##
 
+  known_good_model_args = dict()
+  if os.path.exists(model_args_dir):
+    for model_arg_file in os.listdir(model_args_dir):
+      if not model_arg_file.lower().endswith('.json'):
+        continue
+      model_arg_name = os.path.basename(model_arg_file).lower().replace('.json', '')
+      try:
+        with open(model_arg_file, 'r') as fd:
+          known_good_model_args[model_arg_name] = json5.load(fd)
+      except:
+        traceback.print_exc()
+
   if args.verbose > 0:
     print(f'Loading model {args.model} from {args.model_source}')
   model_load_begin_s = time.perf_counter()
 
-  lm = ModelPack(model=args.model, source=args.model_source, model_args={
-    'gpu': True,
-    'do_sample': True,
+  model_name_token = os.path.basename(args.model)
+  if args.verbose > 1:
+    print(f'Model load is using the following args: {json.dumps(known_good_model_args.get(model_name_token, dict()), indent=2)}')
     
-    # 'n_positions': 2048,
-
-    'device_map': 'auto',
-  })
+  lm = ModelPack(
+    model=args.model,
+    source=args.model_source,
+    model_args=known_good_model_args.get(model_name_token, dict())
+  )
   # ^^ See model_args extras passed into .from_pretrained() https://huggingface.co/transformers/v3.5.1/model_doc/auto.html#automodelforseq2seqlm
 
 
