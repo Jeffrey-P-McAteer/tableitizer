@@ -63,6 +63,8 @@ install_setup_cmds = [
   # Magic GPU client-side stuff (we assume host has kernel stuff for GPUs)
   "SH_IN_CONTAINER: su user -c 'yay -Sy --noconfirm cuda opencl-nvidia ocl-icd '",
 
+  # Possible JIT compiler for python runtime - compatability w/ libs unknown
+  "SH_IN_CONTAINER: su user -c 'yay -Sy --noconfirm pypy3 ; pypy3 -m ensurepip --user '",
 
 ]
 

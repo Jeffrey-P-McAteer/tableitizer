@@ -147,6 +147,8 @@ def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
 
       if verbosity > 2:
         print(f'LLM<<< {lm_output.get("text", None)}')
+        if lm_output.get("text", None) is None:
+          print(f'EXT<<< lm_output = {json.dumps(lm_output, indent=2)}')
 
       lm_response = None
       if 'text' in lm_output:
