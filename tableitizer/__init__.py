@@ -246,7 +246,7 @@ files will be output. All .csv files will contain 1 row of header names.
     'gpu': True,
     'do_sample': True,
     
-    'n_positions': 2048,
+    # 'n_positions': 2048,
 
     'device_map': 'auto',
   })
