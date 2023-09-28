@@ -161,7 +161,7 @@ def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
           if question.lower() in lm_out_text.lower():
             # We got a model that repeats inputs w/ answers as extensions
             lm_trim_i = lm_out_text.lower().index(question.lower()) + len(question)
-            lm_out_text = lm_out_text[lm_trim_i+1:].strip()
+            lm_out_text = lm_out_text[lm_trim_i:].strip()
 
           lm_response = parser_fn(lm_out_text)
 
