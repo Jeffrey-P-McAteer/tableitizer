@@ -1,0 +1,6 @@
+{
+  "gpu": true,
+  "do_sample": true,
+  // "n_positions": 2048, // Jury's still out on this one
+  "device_map": "auto",
+}
