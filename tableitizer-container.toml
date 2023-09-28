@@ -60,6 +60,8 @@ install_setup_cmds = [
 
   # Anything done via yay needs non-root
   "SH_IN_CONTAINER: su user -c 'yay -Sy --noconfirm python310'",
+  # Magic GPU client-side stuff (we assume host has kernel stuff for GPUs)
+  "SH_IN_CONTAINER: su user -c 'yay -Sy --noconfirm cuda opencl-nvidia ocl-icd '",
 
 
 ]
