@@ -157,10 +157,14 @@ def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
       if 'text' in lm_output:
         try:
           lm_out_text = lm_output['text']
-          if prompt_template in lm_out_text:
+
+          if question.lower() in lm_out_text.lower():
             # We got a model that repeats inputs w/ answers as extensions
-            lm_out_text = lm_out_text.replace(prompt_template, '').strip()
+            lm_trim_i = lm_out_text.lower().index(question.lower()) + len(question)
+            lm_out_text = lm_out_text[lm_trim_i+1:].strip()
+
           lm_response = parser_fn(lm_out_text)
+          
         except Exception:
           traceback.print_exc()
       else:
