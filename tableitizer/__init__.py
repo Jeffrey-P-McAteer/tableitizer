@@ -202,7 +202,9 @@ Example models:
   - bert-large-uncased   -340m parameters
   - google/flan-t5-base  -? parameters, needs 3gb ram
   - google/flan-t5-large -? parameters, needs 4gb ram
-  - bigscience/bloomz-1b7 - 1b parameters, needs 8gb ram
+  - bigscience/bloomz-1b7 - 1.7b parameters, needs 8gb ram
+  - bigscience/bloomz-3b  - 3b parameters, needs 12gb ram
+  - bigscience/mt0-xl     - 3.7b parameters,
 
 '''.strip())
   parser.add_argument('--model-source', nargs='?', default='huggingface')
