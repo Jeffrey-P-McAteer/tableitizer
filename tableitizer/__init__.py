@@ -13,6 +13,16 @@ import re
 import tableitizer.experiments
 import tableitizer.packages
 
+def set_transformers_model_folder():
+  if not 'TRANSFORMERS_CACHE' in os.environ:
+      os.environ['TRANSFORMERS_CACHE'] = os.path.join(
+          os.getcwd(), '.tableitizer-model-weights'
+      )
+  os.makedirs(os.environ['TRANSFORMERS_CACHE'], exist_ok=True)
+
+# MUST be done before importing libs!!
+set_transformers_model_folder()
+
 # 3rd-party libs
 json5 = tableitizer.packages.p_import('json5')
 
@@ -35,14 +45,6 @@ try:
 except Exception:
   pass
 from word2number import w2n
-
-
-def set_transformers_model_folder():
-  if not 'TRANSFORMERS_CACHE' in os.environ:
-      os.environ['TRANSFORMERS_CACHE'] = os.path.join(
-          os.getcwd(), '.tableitizer-model-weights'
-      )
-  os.makedirs(os.environ['TRANSFORMERS_CACHE'], exist_ok=True)
 
 def is_a_file(string):
   if not os.path.exists(string):
@@ -153,7 +155,11 @@ def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
       lm_response = None
       if 'text' in lm_output:
         try:
-          lm_response = parser_fn(lm_output['text'])
+          lm_out_text = lm_output['text']
+          if prompt_template in lm_out_text:
+            # We got a model that repeats inputs w/ answers as extensions
+            lm_out_text = lm_out_text.replace(prompt_template, '').strip()
+          lm_response = parser_fn(lm_out_text)
         except Exception:
           traceback.print_exc()
       else:
@@ -191,6 +197,7 @@ Example models:
   - bert-large-uncased   -340m parameters
   - google/flan-t5-base  -? parameters, needs 3gb ram
   - google/flan-t5-large -? parameters, needs 4gb ram
+  - bigscience/bloomz-1b7 - 1b parameters, needs 8gb ram
 
 '''.strip())
   parser.add_argument('--model-source', nargs='?', default='huggingface')
@@ -272,7 +279,7 @@ from "flan-t5-base.json" if that file exists.
   model_name_token = os.path.basename(args.model)
   if args.verbose > 1:
     print(f'Model load is using the following args: {json.dumps(known_good_model_args.get(model_name_token, dict()), indent=2)}')
-    
+
   lm = ModelPack(
     model=args.model,
     source=args.model_source,
