@@ -15,6 +15,9 @@ python -m tableitizer ./data/document1.txt ./data/cars_schema.json -v --model 'g
 # referential statements like "The Jeep is facing the same direction as the second car" and backtrack to the data referenced.
 python -m tableitizer ./data/document1.txt ./data/cars_multi_schema.json -vvv --model bigscience/bloomz-1b7
 
+# Initial 2+ model research
+python -m tableitizer ./data/document1.txt ./data/cars_multi_schema.json -vvv  --model google/flan-t5-large --model bigscience/bloomz-1b7
+
 
 ```
 

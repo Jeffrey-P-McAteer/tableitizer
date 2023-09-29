@@ -127,54 +127,94 @@ def parse_str(text):
     return None
   return str(text)
 
-def answer_questions(lm, doc_context, questions, parser_fn, verbosity=0):
+def answer_questions(lms, doc_context, questions, parser_fn, verbosity=0):
   if not isinstance(questions, list):
     questions = [ questions ]
 
-  for question in questions:
-    # See https://github.com/google-research/FLAN/blob/main/flan/v2/flan_templates_branched.py#L277C13-L277C13
-    prompt_templates = [
-      f'''Article: {doc_context}\n\nQuestion: {question}'''.strip(),
-      f'''Read this and answer the question\n\n{doc_context}\n\n{question}'''.strip(),
-      f'''Article: {doc_context}\n\nNow answer this question: {question}'''.strip(),
-    ]
-    for prompt_template in prompt_templates:
-      
-      if verbosity > 2:
-        print()
-        llm_input = prompt_template.replace(doc_context, '{doc_context}').replace('\n\n', '\n').strip()
-        llm_input = llm_input.replace('\n', '\nLLM>>> ')
-        print(f'LLM>>> {llm_input}')
-      
-      lm_output = lm.predict(prompt_template, max_length=2048, keep_history=False)
+  if not isinstance(lms, list):
+    lms = [ lms ]
 
-      if verbosity > 2:
-        print(f'LLM<<< {lm_output.get("text", None)}')
-        if lm_output.get("text", None) is None:
-          print(f'EXT<<< lm_output = {json.dumps(lm_output, indent=2)}')
+  # For all responses from LMs that go through parser_fn,
+  # keep results here. At end, most common answer is taken.
+  all_parseable_responses = []
 
-      lm_response = None
-      if 'text' in lm_output:
-        try:
-          lm_out_text = lm_output['text']
+  for lm in lms:
+    for question in questions:
+      # See https://github.com/google-research/FLAN/blob/main/flan/v2/flan_templates_branched.py#L277C13-L277C13
+      prompt_templates = [
+        f'''Article: {doc_context}\n\nQuestion: {question}'''.strip(),
+        #f'''Read this and answer the question\n\n{doc_context}\n\n{question}'''.strip(),
+        #f'''Article: {doc_context}\n\nNow answer this question: {question}'''.strip(),
+      ]
+      for prompt_template in prompt_templates:
+        
+        if verbosity > 2:
+          print()
+          llm_input = prompt_template.replace(doc_context, '{doc_context}').replace('\n\n', '\n').strip()
+          llm_input = llm_input.replace('\n', '\nLLM>>> ')
+          print(f'LLM>>> {llm_input}')
+        
+        lm_output = lm.predict(prompt_template, max_length=2048, keep_history=False)
 
-          if question.lower() in lm_out_text.lower():
-            # We got a model that repeats inputs w/ answers as extensions
-            lm_trim_i = lm_out_text.lower().index(question.lower()) + len(question)
-            lm_out_text = lm_out_text[lm_trim_i:].strip()
+        if verbosity > 2:
+          print(f'LLM<<< {lm_output.get("text", None)}')
+          if lm_output.get("text", None) is None:
+            print(f'EXT<<< lm_output = {json.dumps(lm_output, indent=2)}')
 
-          lm_response = parser_fn(lm_out_text)
+        lm_response = None
+        if 'text' in lm_output:
+          try:
+            lm_out_text = lm_output['text']
 
-        except Exception:
-          traceback.print_exc()
-      else:
-        lm_response = json.dumps(lm_output)
-      
-      if lm_response is not None:
-        return lm_response
-    
-  return None
+            if question.lower() in lm_out_text.lower():
+              # We got a model that repeats inputs w/ answers as extensions
+              lm_trim_i = lm_out_text.lower().index(question.lower()) + len(question)
+              lm_out_text = lm_out_text[lm_trim_i:].strip()
 
+            lm_response = parser_fn(lm_out_text)
+
+          except Exception:
+            traceback.print_exc()
+        #else:
+        #  lm_response = json.dumps(lm_output)
+        
+        if lm_response is not None:
+          all_parseable_responses.append(lm_response)
+
+  response_counts = dict()
+  for response in all_parseable_responses:
+    if isinstance(response, str):
+      response_counts['-'.join(response.strip().lower().split())] += 1
+    else:
+      response_counts[response] += 1
+  
+
+  highest_response_key = None
+  for response_key, response_count in response_counts.items():
+    if highest_response_key is None:
+      highest_response_key = response_key
+      continue
+
+    if response_counts[response_key] > response_counts[highest_response_key]:
+      highest_response_key = response_key
+
+  if isinstance(highest_response_key, str):
+    # Go back and find the original || first matching original value w/ capital letters and spacing.
+    for response in all_parseable_responses:
+      if isinstance(response, str):
+        if '-'.join(response.strip().lower().split()) == highest_response_key:
+          if verbosity > 2:
+            print(f'response = {response}')
+          return response
+
+    if verbosity > 2:
+      print(f'response = {highest_response_key}')
+    return highest_response_key
+  else:
+    # int, float, whateves
+    if verbosity > 2:
+      print(f'response = {highest_response_key}')
+    return highest_response_key
 
 
 def main(args=sys.argv):
@@ -196,7 +236,7 @@ If name ends in .csv AND >1 table is defined, multiple <prefix>_<table-name>.csv
 files will be output. All .csv files will contain 1 row of header names.
 '''.strip())
   parser.add_argument('-v', '--verbose', action='count', default=0)
-  parser.add_argument('--model', nargs='?', default='google/flan-t5-large', help='''
+  parser.add_argument('--model', nargs='*', default='google/flan-t5-large', help='''
 Example models:
   - bert-base-uncased    -110m parameters
   - bert-large-uncased   -340m parameters
@@ -284,17 +324,19 @@ from "flan-t5-base.json" if that file exists.
     print(f'Loading model {args.model} from {args.model_source}')
   model_load_begin_s = time.perf_counter()
 
-  model_name_token = os.path.basename(args.model)
-  if args.verbose > 1:
-    print(f'Model load is using the following args: {json.dumps(known_good_model_args.get(model_name_token, dict()), indent=2)}')
+  lms = []
 
-  lm = ModelPack(
-    model=args.model,
-    source=args.model_source,
-    model_args=known_good_model_args.get(model_name_token, dict())
-  )
-  # ^^ See model_args extras passed into .from_pretrained() https://huggingface.co/transformers/v3.5.1/model_doc/auto.html#automodelforseq2seqlm
+  for model in args.model:
+    model_name_token = os.path.basename(model)
+    if args.verbose > 1:
+      print(f'Model {model} is using the following args: {json.dumps(known_good_model_args.get(model_name_token, dict()), indent=2)}')
 
+    lm = ModelPack(
+      model=model,
+      source=args.model_source,
+      model_args=known_good_model_args.get(model_name_token, dict())
+    )
+    lms.append(lm)
 
   model_load_end_s = time.perf_counter()
   if args.verbose > 0:
@@ -309,7 +351,7 @@ from "flan-t5-base.json" if that file exists.
     if args.verbose > 0:
       print('=' * 6, t.table_name, '=' * 6)
 
-    num_items = answer_questions(lm, doc_context, t.table_count_queries, parse_int, verbosity=args.verbose)
+    num_items = answer_questions(lms, doc_context, t.table_count_queries, parse_int, verbosity=args.verbose)
     if args.verbose > 0:
       print(f'{t.table_name} num_items = {num_items}')
       
@@ -332,7 +374,7 @@ from "flan-t5-base.json" if that file exists.
           if args.verbose > 1:
             print(f'row_vals[{field_name}] = answer_questions(lm, doc_context, {field_questions}, {t.row_field_parser_fn.get(field_name, parse_str)})')
 
-          row_vals[field_name] = answer_questions(lm, doc_context, field_questions, t.row_field_parser_fn.get(field_name, parse_str), verbosity=args.verbose )
+          row_vals[field_name] = answer_questions(lms, doc_context, field_questions, t.row_field_parser_fn.get(field_name, parse_str), verbosity=args.verbose )
 
         parsed_data[t.table_name].append(row_vals)
       except Exception:
