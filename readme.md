@@ -18,6 +18,8 @@ python -m tableitizer ./data/document1.txt ./data/cars_multi_schema.json -vvv --
 # Initial 2+ model research
 python -m tableitizer ./data/document1.txt ./data/cars_multi_schema.json -vvv  --model google/flan-t5-large --model bigscience/bloomz-1b7
 
+# Same but larger models
+python -m tableitizer ./data/document1.txt ./data/cars_multi_schema.json -vvv  --model google/flan-t5-xl --model bigscience/bloomz-3b
 
 ```
 
