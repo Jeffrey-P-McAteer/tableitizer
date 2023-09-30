@@ -2,7 +2,10 @@
   "cars:=How many cars are in the parking lot?;;How many cars are there?;;What is the number of cars?;;How many cars?;;Number of cars on the road?;;Count cars?": [
     {
       "color": "What color is car {0}?",
-      "position": "What position is car {0} in?",
+      "position": [
+          "What position is car {0} in?",
+          "What position is car {0} at?",
+      ],
       "angle:=parse_float": [
         "Which angle is car {0} facing?",
         "Which direction is car {0} facing?",
