@@ -184,9 +184,9 @@ def answer_questions(lms, doc_context, questions, parser_fn, verbosity=0):
   response_counts = dict()
   for response in all_parseable_responses:
     if isinstance(response, str):
-      response_counts['-'.join(response.strip().lower().split())] += 1
+      response_counts['-'.join(response.strip().lower().split())] = 1 + response_counts.get('-'.join(response.strip().lower().split()), 0)
     else:
-      response_counts[response] += 1
+      response_counts[response] = 1 + response_counts.get(response, 0)
   
 
   highest_response_key = None
