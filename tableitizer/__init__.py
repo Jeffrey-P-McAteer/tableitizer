@@ -303,6 +303,9 @@ from "flan-t5-base.json" if that file exists.
       print(f't.table_count_queries={t.table_count_queries}')
       print(f't.row_field_query_dict={t.row_field_query_dict}')
 
+  if args.verbose > 0:
+    print(f'args.model = {args.model}')
+
   ## 
   ## Load the LLM
   ##
