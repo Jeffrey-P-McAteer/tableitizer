@@ -9,7 +9,7 @@ def p_import(module_name, package_name=None):
     package_name = module_name
 
   env_target = os.path.join(os.path.dirname(__file__), '.py-env')
-  os.makedirs(env_target, exist_ok=True)
+  os.makedirs(env_target, mode=0o777, exist_ok=True)
   if not env_target in sys.path:
     sys.path.append(env_target)
 
