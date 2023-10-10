@@ -1,0 +1,4 @@
+{
+  "max_length": 512,
+  // "device_map": "auto",
+}
