@@ -162,7 +162,7 @@ def answer_questions(lms, doc_context, questions, parser_fn, verbosity=0):
             print(f'EXT<<< lm_output = {json.dumps(lm_output, indent=2)}')
 
         lm_response = None
-        if 'text' in lm_output:
+        if 'text' in lm_output and not (lm_output['text'] is None):
           try:
             lm_out_text = lm_output['text']
 
